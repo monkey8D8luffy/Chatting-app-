@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,7 +20,6 @@ import com.kizuna.network.WebSocketManager
 import com.kizuna.security.CryptoManager
 import com.kizuna.ui.components.glassmorphic
 import com.kizuna.ui.theme.TextSecondary
-import kotlinx.coroutines.launch
 
 data class ChatMessage(val id: String, val text: String, val isMine: Boolean)
 
@@ -33,7 +32,6 @@ fun ChatScreen(
 ) {
     var messageText by remember { mutableStateOf("") }
     val messages = remember { mutableStateListOf<ChatMessage>() }
-    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         CryptoManager.initializeSession() // In real app, run Diffie-Hellman here
@@ -53,7 +51,12 @@ fun ChatScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding()
+            .imePadding()
+    ) {
         TopAppBar(
             title = { Text(text = "Nexus: $nexusId", color = Color.White) },
             actions = {
@@ -87,9 +90,9 @@ fun ChatScreen(
                 onValueChange = { messageText = it },
                 modifier = Modifier.weight(1f),
                 placeholder = { Text("Message...", color = TextSecondary) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.White.copy(alpha = 0.2f),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
                 ),
@@ -116,7 +119,11 @@ fun ChatScreen(
                     .size(48.dp)
                     .glassmorphic(shape = RoundedCornerShape(24.dp))
             ) {
-                Icon(imageVector = Icons.Default.Send, contentDescription = "Send", tint = Color.White)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Send",
+                    tint = Color.White
+                )
             }
         }
     }
@@ -132,9 +139,9 @@ private fun sendMessage(text: String, webSocketManager: WebSocketManager, messag
 fun ChatBubble(message: ChatMessage) {
     val alignment = if (message.isMine) Alignment.CenterEnd else Alignment.CenterStart
     val shape = if (message.isMine) {
-        RoundedCornerShape(16.dp, 16.dp, 0.dp, 16.dp)
+        RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp)
     } else {
-        RoundedCornerShape(16.dp, 16.dp, 16.dp, 0.dp)
+        RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp)
     }
 
     Box(
@@ -145,6 +152,7 @@ fun ChatBubble(message: ChatMessage) {
     ) {
         Box(
             modifier = Modifier
+                .widthIn(max = 280.dp) // Ensures bubble does not stretch full screen on tablets
                 .glassmorphic(shape = shape)
                 .padding(12.dp)
         ) {

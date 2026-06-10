@@ -2,6 +2,7 @@ package com.kizuna.ui.call
 
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CallEnd
 import androidx.compose.material3.Icon
@@ -9,6 +10,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -23,7 +25,6 @@ fun CallScreen(
     isCaller: Boolean,
     onEndCall: () -> Unit
 ) {
-    val context = LocalContext.current
     var remoteVideoTrack by remember { mutableStateOf<VideoTrack?>(null) }
 
     LaunchedEffect(Unit) {
@@ -44,7 +45,7 @@ fun CallScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Remote View
+        // Remote View (Full Screen)
         AndroidView(
             factory = { ctx ->
                 SurfaceViewRenderer(ctx).apply {
@@ -62,7 +63,7 @@ fun CallScreen(
             }
         )
 
-        // Local View PIP
+        // Local View PIP (Floating)
         AndroidView(
             factory = { ctx ->
                 SurfaceViewRenderer(ctx).apply {
@@ -77,10 +78,12 @@ fun CallScreen(
                 }
             },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(Alignment.TopEnd)
+                .systemBarsPadding() // Ensures it doesn't render under the status bar
                 .padding(16.dp)
-                .width(120.dp)
+                .width(110.dp)
                 .height(160.dp)
+                .clip(RoundedCornerShape(16.dp)) // Clips the AndroidView feed nicely
         )
 
         // End Call Button
@@ -88,7 +91,8 @@ fun CallScreen(
             onClick = onEndCall,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(32.dp)
+                .systemBarsPadding() // Ensures it sits above system nav gestures
+                .padding(bottom = 32.dp)
                 .size(64.dp)
         ) {
             Icon(
