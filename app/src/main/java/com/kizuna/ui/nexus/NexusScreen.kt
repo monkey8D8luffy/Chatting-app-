@@ -24,12 +24,16 @@ fun NexusScreen(
     var targetNexusCode by remember { mutableStateOf("") }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding()
+            .imePadding(),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
-                .glassmorphic(blurRadius = 20.dp)
+                .fillMaxWidth(0.9f)
+                .glassmorphic()
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -44,25 +48,30 @@ fun NexusScreen(
             Text(
                 text = myNexusCode,
                 color = Color.White,
-                fontSize = 48.sp,
-                letterSpacing = 8.sp,
+                fontSize = 42.sp, // Reduced slightly to avoid clipping on tiny phones
+                letterSpacing = 6.sp,
                 textAlign = TextAlign.Center
             )
 
             Button(
                 onClick = { myNexusCode = NexusGenerator.generateNexusCode() },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                contentPadding = PaddingValues(0.dp)
             ) {
                 Text("REGENERATE", color = TextSecondary, fontSize = 12.sp)
             }
 
-            Divider(color = Color.White.copy(alpha = 0.2f))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.2f))
 
             OutlinedTextField(
                 value = targetNexusCode,
-                onValueChange = { if (it.length <= 6) targetNexusCode = it },
-                label = { Text("Enter Target Nexus", color = TextSecondary) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                onValueChange = {
+                    // Only allow exactly 6 alphanumeric chars, filter out spaces or symbols.
+                    val filtered = it.filter { char -> char.isLetterOrDigit() }.take(6)
+                    targetNexusCode = filtered
+                },
+                label = { Text("Target Nexus", color = TextSecondary) },
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.White,
                     unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
                     focusedTextColor = Color.White,

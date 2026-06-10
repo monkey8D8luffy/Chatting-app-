@@ -27,7 +27,9 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
     var isLoading by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding(),
         contentAlignment = Alignment.Center
     ) {
         AnimatedVisibility(
@@ -37,8 +39,9 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
         ) {
             Column(
                 modifier = Modifier
-                    .glassmorphic(blurRadius = 15.dp)
-                    .padding(32.dp),
+                    .fillMaxWidth(0.85f) // Keeps modal looking nice on large phones/tablets
+                    .glassmorphic()
+                    .padding(vertical = 48.dp, horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -46,7 +49,7 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
                     text = "KIZUNA",
                     color = Color.White,
                     fontSize = 32.sp,
-                    modifier = Modifier.padding(bottom = 24.dp)
+                    modifier = Modifier.padding(bottom = 32.dp)
                 )
 
                 Button(
@@ -66,9 +69,9 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.1f)),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
+                        .height(56.dp)
                 ) {
-                    Text(text = "Sign in with Google", color = Color.White)
+                    Text(text = "Sign in with Google", color = Color.White, fontSize = 16.sp)
                 }
             }
         }
