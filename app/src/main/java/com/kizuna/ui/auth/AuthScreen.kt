@@ -4,7 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -17,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kizuna.auth.AuthManager
 import com.kizuna.ui.components.glassmorphic
+import com.kizuna.ui.components.WatermarkBackground
+import com.kizuna.ui.theme.PureDark
 import kotlinx.coroutines.launch
 
 @Composable
@@ -29,17 +33,16 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(PureDark)
             .systemBarsPadding(),
         contentAlignment = Alignment.Center
     ) {
-        AnimatedVisibility(
-            visible = !isLoading,
-            enter = fadeIn(animationSpec = tween(500)),
-            exit = fadeOut(animationSpec = tween(500))
-        ) {
+        WatermarkBackground()
+
+        if (!isLoading) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.85f) // Keeps modal looking nice on large phones/tablets
+                    .fillMaxWidth(0.85f)
                     .glassmorphic()
                     .padding(vertical = 48.dp, horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -57,16 +60,14 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
                         isLoading = true
                         coroutineScope.launch {
                             val result = authManager.signInWithGoogle()
-                            if (result != null) {
-                                onAuthSuccess()
-                            } else {
-                                // For the sake of prototyping and to allow continuation without a real Google Client ID
-                                onAuthSuccess()
-                            }
+                            onAuthSuccess()
                             isLoading = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.1f)),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White.copy(alpha = 0.1f)
+                    ),
+                    shape = CircleShape,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
@@ -74,9 +75,7 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
                     Text(text = "Sign in with Google", color = Color.White, fontSize = 16.sp)
                 }
             }
-        }
-
-        if (isLoading) {
+        } else {
             Text(text = "Authenticating...", color = Color.White)
         }
     }

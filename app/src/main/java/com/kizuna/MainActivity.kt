@@ -13,11 +13,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 import com.kizuna.network.WebSocketManager
 import com.kizuna.ui.auth.AuthScreen
 import com.kizuna.ui.call.CallScreen
 import com.kizuna.ui.chat.ChatScreen
-import com.kizuna.ui.nexus.NexusScreen
+import com.kizuna.ui.chat.EphemeralChatScreen
+import com.kizuna.ui.chat.EphemeralSetupScreen
+import com.kizuna.ui.hub.HubScreen
+import com.kizuna.ui.profile.ProfileSetupScreen
 import com.kizuna.ui.theme.KizunaTheme
 import com.kizuna.webrtc.WebRTCManager
 
@@ -25,6 +30,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        try {
+            if (FirebaseApp.getApps(this).isEmpty()) {
+                val options = FirebaseOptions.Builder()
+                    .setApplicationId("1:1234567890:android:abcdef123456")
+                    .setProjectId("kizuna-test-project")
+                    .setApiKey("test-api-key")
+                    .build()
+                FirebaseApp.initializeApp(this, options)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         setContent {
             KizunaTheme {
                 Surface(
@@ -50,22 +69,62 @@ fun KizunaApp() {
     var activeNexusId by remember { mutableStateOf("") }
     var isCaller by remember { mutableStateOf(false) }
 
+    // Ephemeral state
+    var ephemeralNickname by remember { mutableStateOf("") }
+    var ephemeralTtl by remember { mutableStateOf(10) }
+    var ephemeralRoomCode by remember { mutableStateOf("") }
+
     NavHost(navController = navController, startDestination = "auth") {
         composable("auth") {
             AuthScreen(
                 onAuthSuccess = {
-                    navController.navigate("nexus") {
+                    navController.navigate("profile_setup") {
                         popUpTo("auth") { inclusive = true }
                     }
                 }
             )
         }
 
-        composable("nexus") {
-            NexusScreen(
-                onConnectClicked = { targetId ->
+        composable("profile_setup") {
+            ProfileSetupScreen(
+                onSetupComplete = {
+                    navController.navigate("hub") {
+                        popUpTo("profile_setup") { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable("hub") {
+            HubScreen(
+                onNavigateToChat = { targetId ->
                     activeNexusId = targetId
                     navController.navigate("chat")
+                },
+                onNavigateToProfile = {
+                    navController.navigate("ephemeral_setup") // Demo linking ephemeral from profile icon for now
+                }
+            )
+        }
+
+        composable("ephemeral_setup") {
+            EphemeralSetupScreen(
+                onGenerateRoom = { nickname, ttl ->
+                    ephemeralNickname = nickname
+                    ephemeralTtl = ttl
+                    ephemeralRoomCode = "EPH-" + (1000..9999).random() // Mock generator
+                    navController.navigate("ephemeral_chat")
+                }
+            )
+        }
+
+        composable("ephemeral_chat") {
+            EphemeralChatScreen(
+                roomCode = ephemeralRoomCode,
+                nickname = ephemeralNickname,
+                ttlMinutes = ephemeralTtl,
+                onRoomClosed = {
+                    navController.popBackStack("hub", inclusive = false)
                 }
             )
         }

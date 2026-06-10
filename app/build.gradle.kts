@@ -75,6 +75,15 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0-alpha01")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
 
+    // Firebase Core & Auth & Firestore
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
     // OkHttp for WebSockets
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
