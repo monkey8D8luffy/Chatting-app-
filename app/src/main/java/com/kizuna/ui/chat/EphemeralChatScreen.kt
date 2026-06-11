@@ -1,5 +1,9 @@
 package com.kizuna.ui.chat
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,51 +14,64 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kizuna.network.WebSocketManager
-import com.kizuna.security.CryptoManager
 import com.kizuna.ui.components.WatermarkBackground
 import com.kizuna.ui.components.glassmorphic
 import com.kizuna.ui.theme.PureDark
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class ChatMessage(val id: String, val text: String, val isMine: Boolean)
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(
-    nexusId: String,
-    webSocketManager: WebSocketManager,
-    onStartCallClicked: () -> Unit
+fun EphemeralChatScreen(
+    roomCode: String,
+    nickname: String,
+    ttlMinutes: Int,
+    onRoomClosed: () -> Unit
 ) {
+    val context = LocalContext.current
     var messageText by remember { mutableStateOf("") }
     val messages = remember { mutableStateListOf<ChatMessage>() }
-
-    LaunchedEffect(Unit) {
-        CryptoManager.initializeSession()
-        webSocketManager.connect(nexusId)
-
-        webSocketManager.messages.collect { encryptedMsg ->
-            val decrypted = CryptoManager.decryptMessage(encryptedMsg)
-            messages.add(ChatMessage(System.currentTimeMillis().toString(), decrypted, false))
-        }
-    }
+    var remainingTime by remember { mutableStateOf(ttlMinutes * 60) }
 
     DisposableEffect(Unit) {
+        val window = context.findActivity()?.window
+        window?.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+
         onDispose {
-            webSocketManager.disconnect()
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            messages.clear()
         }
     }
+
+    LaunchedEffect(Unit) {
+        while (remainingTime > 0) {
+            delay(1000)
+            remainingTime--
+        }
+        messages.clear()
+        onRoomClosed()
+    }
+
+    val minutes = remainingTime / 60
+    val seconds = remainingTime % 60
+    val timeString = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
 
     Column(
         modifier = Modifier
@@ -64,10 +81,10 @@ fun ChatScreen(
             .imePadding()
     ) {
         TopAppBar(
-            title = { Text(text = "Nexus: $nexusId", color = Color.White) },
-            actions = {
-                IconButton(onClick = onStartCallClicked) {
-                    Icon(imageVector = Icons.Default.Videocam, contentDescription = "Start Video Call", tint = Color.White)
+            title = {
+                Column {
+                    Text(text = "Room: $roomCode", color = Color.White)
+                    Text(text = "TTL: $timeString | Nickname: $nickname", color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp)
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -83,7 +100,7 @@ fun ChatScreen(
                 reverseLayout = false
             ) {
                 items(messages) { msg ->
-                    ChatBubble(message = msg)
+                    EphemeralChatBubble(message = msg)
                 }
             }
         }
@@ -109,7 +126,7 @@ fun ChatScreen(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = {
                     if (messageText.isNotBlank()) {
-                        sendMessage(messageText, webSocketManager, messages)
+                        messages.add(ChatMessage(System.currentTimeMillis().toString(), messageText, true))
                         messageText = ""
                     }
                 })
@@ -120,7 +137,7 @@ fun ChatScreen(
             IconButton(
                 onClick = {
                     if (messageText.isNotBlank()) {
-                        sendMessage(messageText, webSocketManager, messages)
+                        messages.add(ChatMessage(System.currentTimeMillis().toString(), messageText, true))
                         messageText = ""
                     }
                 },
@@ -138,14 +155,8 @@ fun ChatScreen(
     }
 }
 
-private fun sendMessage(text: String, webSocketManager: WebSocketManager, messages: MutableList<ChatMessage>) {
-    messages.add(ChatMessage(System.currentTimeMillis().toString(), text, true))
-    val encrypted = CryptoManager.encryptMessage(text)
-    webSocketManager.sendMessage(encrypted)
-}
-
 @Composable
-fun ChatBubble(message: ChatMessage) {
+fun EphemeralChatBubble(message: ChatMessage) {
     val alignment = if (message.isMine) Alignment.CenterEnd else Alignment.CenterStart
     val shape = if (message.isMine) {
         RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp)

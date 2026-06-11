@@ -1,6 +1,7 @@
 package com.kizuna.network
 
 import android.util.Log
+import com.kizuna.Config
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import okhttp3.*
@@ -9,16 +10,13 @@ import java.util.concurrent.TimeUnit
 class WebSocketManager {
     private var webSocket: WebSocket? = null
 
-    // Hardcoded external Python server URL for prototyping/production
-    private val serverUrl = "ws://YOUR_PYTHON_SERVER_IP:8000/ws"
-
     private val _messages = MutableSharedFlow<String>(replay = 1)
     val messages: SharedFlow<String> = _messages
 
     fun connect(nexusId: String) {
         val client = OkHttpManager.client
         val request = Request.Builder()
-            .url("$serverUrl/$nexusId")
+            .url("${Config.WEBSOCKET_URL}/$nexusId")
             .build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
