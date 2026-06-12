@@ -59,7 +59,7 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
                     onClick = {
                         isLoading = true
                         coroutineScope.launch {
-                            val result = authManager.signInWithGoogle()
+                            authManager.signInWithGoogle()
                             onAuthSuccess()
                             isLoading = false
                         }
