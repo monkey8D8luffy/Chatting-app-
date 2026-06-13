@@ -1,0 +1,3 @@
+## 2024-06-13 - Missing Keyboard Options and RTL Support in Jetpack Compose
+**Learning:** Text inputs that trigger actions on submit (like search or profile saving) frequently miss proper `KeyboardOptions` and `KeyboardActions` mapping, preventing users from firing events via soft keyboards. Directional vector icons often use the default LTR versions instead of `AutoMirrored` counterparts.
+**Action:** Always ensure `OutlinedTextField` or `TextField` have `KeyboardOptions(imeAction = ...)` and `KeyboardActions` defined. Prefer `Icons.AutoMirrored.Filled.*` for icons conveying direction (like Chat/Send) to support RTL layouts natively.
