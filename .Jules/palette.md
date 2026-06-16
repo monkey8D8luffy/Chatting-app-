@@ -1,0 +1,3 @@
+## 2024-06-16 - Add Keyboard Dismissal and RTL Icons for Compose App
+**Learning:** Found an accessibility issue pattern specific to this app's components: lack of proper keyboard actions (ImeAction mappings) and failure to hide the soft keyboard natively when actions like searches are clicked, combined with non-RTL-mirrored directional icons (like Chat).
+**Action:** Always include `keyboardOptions = KeyboardOptions(imeAction = ...)` and a corresponding `KeyboardActions` when adding Compose TextFields, and hook up `LocalSoftwareKeyboardController.current?.hide()` to their primary associated buttons. Swapped standard directional icons to `Icons.AutoMirrored` equivalents.
