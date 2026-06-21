@@ -7,9 +7,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kizuna.ui.components.WatermarkBackground
@@ -19,8 +23,17 @@ import com.kizuna.ui.theme.PureDark
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EphemeralSetupScreen(onGenerateRoom: (String, Int) -> Unit) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     var nickname by remember { mutableStateOf("") }
     var ttlMinutes by remember { mutableStateOf(10) }
+
+    val handleGenerateRoom = {
+        if (nickname.isNotBlank()) {
+            keyboardController?.hide()
+            onGenerateRoom(nickname, ttlMinutes)
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -66,7 +79,9 @@ fun EphemeralSetupScreen(onGenerateRoom: (String, Int) -> Unit) {
                 ),
                 shape = CircleShape,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { handleGenerateRoom() })
             )
 
             Text(
@@ -90,11 +105,7 @@ fun EphemeralSetupScreen(onGenerateRoom: (String, Int) -> Unit) {
             )
 
             Button(
-                onClick = {
-                    if (nickname.isNotBlank()) {
-                        onGenerateRoom(nickname, ttlMinutes)
-                    }
-                },
+                onClick = { handleGenerateRoom() },
                 enabled = nickname.isNotBlank(),
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f)),
