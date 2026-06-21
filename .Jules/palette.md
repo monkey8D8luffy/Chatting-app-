@@ -1,0 +1,3 @@
+## 2026-06-21 - Form UX & RTL Accessibility Polish
+**Learning:** Jetpack Compose requires explicit handling for soft keyboards on form submission. Unlike standard web forms, setting `ImeAction` isn't enough; the keyboard must be explicitly hidden using `LocalSoftwareKeyboardController.current?.hide()` to prevent it from blocking the UI after an action is triggered. Additionally, directional icons like Chat should always use `Icons.AutoMirrored` instead of `Icons.Default` to properly support Right-to-Left (RTL) languages.
+**Action:** Always map `KeyboardOptions` and `KeyboardActions` for text inputs that trigger actions (like 'Done' or 'Search'), and explicitly call `hide()` on the keyboard controller. Default to `AutoMirrored` variants for any directional vectors.
