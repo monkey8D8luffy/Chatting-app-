@@ -1,0 +1,3 @@
+## 2024-05-18 - Keyboard Actions for Form Submission
+**Learning:** Text inputs that trigger actions on submit (like entering a room code or sending a message) should have proper `KeyboardOptions(imeAction = ...)` and `KeyboardActions` mapping, and explicitly hide the keyboard using `LocalSoftwareKeyboardController.current?.hide()`. This ensures the soft keyboard properly fires the event and dismisses cleanly, improving the UX for mobile users who expect keyboard enter/go buttons to submit forms.
+**Action:** Always check `OutlinedTextField` and `TextField` components for missing `KeyboardOptions` and `KeyboardActions` when they are intended to submit data.
