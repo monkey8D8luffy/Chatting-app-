@@ -9,6 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kizuna.nexus.NexusGenerator
@@ -22,6 +25,7 @@ fun NexusScreen(
 ) {
     var myNexusCode by remember { mutableStateOf(NexusGenerator.generateNexusCode()) }
     var targetNexusCode by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Box(
         modifier = Modifier
@@ -79,7 +83,18 @@ fun NexusScreen(
                     cursorColor = Color.White
                 ),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Ascii,
+                    imeAction = ImeAction.Go
+                ),
+                keyboardActions = KeyboardActions(
+                    onGo = {
+                        if (targetNexusCode.length == 6) {
+                            keyboardController?.hide()
+                            onConnectClicked(targetNexusCode)
+                        }
+                    }
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
 
