@@ -4,13 +4,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
@@ -27,10 +31,28 @@ fun ProfileSetupScreen(onSetupComplete: () -> Unit) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val authManager = remember { AuthManager(context) }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     var displayName by remember { mutableStateOf("") }
     var avatarUrl by remember { mutableStateOf("https://example.com/default_avatar.png") }
     var isSaving by remember { mutableStateOf(false) }
+
+    val onSetupAction = {
+        if (displayName.isNotBlank()) {
+            isSaving = true
+            keyboardController?.hide()
+            coroutineScope.launch {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: "dummy_uid_${System.currentTimeMillis()}"
+                val friendCode = NexusGenerator.generateNexusCode()
+
+                val success = authManager.saveUserProfile(uid, displayName, avatarUrl, friendCode)
+                if (success || true) { // allow passing for demo purposes if firestore isn't set up
+                    onSetupComplete()
+                }
+                isSaving = false
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -68,26 +90,14 @@ fun ProfileSetupScreen(onSetupComplete: () -> Unit) {
                     unfocusedTextColor = Color.White
                 ),
                 shape = CircleShape,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onSetupAction() }),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
                 singleLine = true
             )
 
             Button(
-                onClick = {
-                    if (displayName.isNotBlank()) {
-                        isSaving = true
-                        coroutineScope.launch {
-                            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: "dummy_uid_${System.currentTimeMillis()}"
-                            val friendCode = NexusGenerator.generateNexusCode()
-
-                            val success = authManager.saveUserProfile(uid, displayName, avatarUrl, friendCode)
-                            if (success || true) { // allow passing for demo purposes if firestore isn't set up
-                                onSetupComplete()
-                            }
-                            isSaving = false
-                        }
-                    }
-                },
+                onClick = { onSetupAction() },
                 enabled = !isSaving && displayName.isNotBlank(),
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f)),
