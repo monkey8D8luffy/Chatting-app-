@@ -6,9 +6,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -16,7 +18,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kizuna.ui.components.WatermarkBackground
@@ -30,6 +34,7 @@ fun HubScreen(
     onNavigateToProfile: () -> Unit
 ) {
     var searchCode by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // Dummy data for requests
     val pendingRequests = remember { listOf("ASW4x7", "B92kM1") }
@@ -52,7 +57,7 @@ fun HubScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { /* Already here */ }) {
-                        Icon(Icons.Default.Chat, contentDescription = "Chat", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Chat", tint = Color.White)
                     }
                     IconButton(onClick = { /* Future call log */ }) {
                         Icon(Icons.Default.Call, contentDescription = "Call", tint = Color.White.copy(alpha = 0.5f))
@@ -101,12 +106,20 @@ fun HubScreen(
                             unfocusedTextColor = Color.White
                         ),
                         shape = CircleShape,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = {
+                            keyboardController?.hide()
+                            /* Send request logic */
+                        }),
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
-                        onClick = { /* Send request logic */ },
+                        onClick = {
+                            keyboardController?.hide()
+                            /* Send request logic */
+                        },
                         shape = CircleShape,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f)),
                         modifier = Modifier.size(56.dp),
