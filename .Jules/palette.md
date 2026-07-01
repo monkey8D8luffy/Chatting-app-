@@ -1,0 +1,3 @@
+## 2024-05-17 - RTL icons and Input Keyboard Dismissal
+**Learning:** For directional vectors, particularly Chat and Send icons, flat definitions like `Icons.Default.Chat` fail in Right-to-Left (RTL) layouts. Using `Icons.AutoMirrored` ensures they flip naturally. Additionally, standard `OutlinedTextField` implementations with submit/search capabilities leave soft keyboards stranded on screen unless explicitly handled with `LocalSoftwareKeyboardController.current?.hide()`.
+**Action:** Always prefer `Icons.AutoMirrored.Filled.*` for icons conveying direction. Always bind explicit `KeyboardActions(onAction = { keyboard?.hide() })` and map the click handler of the corresponding submit button to dismiss the keyboard as well.
