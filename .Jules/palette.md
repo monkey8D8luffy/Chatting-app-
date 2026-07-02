@@ -1,0 +1,3 @@
+## 2024-05-15 - Explicit Soft Keyboard Management and AutoMirrored Icons in Compose
+**Learning:** Compose text inputs often do not natively dismiss the soft keyboard on ImeAction submit if not explicitly instructed, leading to an awkward UX where the keyboard covers UI after an action. Additionally, directional icons (like Chat/Send) do not automatically flip for RTL layouts unless specifically using `Icons.AutoMirrored`.
+**Action:** Always map `KeyboardOptions(imeAction = ImeAction.[Action])` to `KeyboardActions` that explicitly call `LocalSoftwareKeyboardController.current?.hide()`. Prefer `Icons.AutoMirrored` for any icon indicating directionality or reading flow.
