@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -48,6 +49,7 @@ fun EphemeralChatScreen(
     val context = LocalContext.current
     var messageText by remember { mutableStateOf("") }
     val messages = remember { mutableStateListOf<ChatMessage>() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     var remainingTime by remember { mutableStateOf(ttlMinutes * 60) }
 
     DisposableEffect(Unit) {
@@ -127,6 +129,7 @@ fun EphemeralChatScreen(
                 keyboardActions = KeyboardActions(onSend = {
                     if (messageText.isNotBlank()) {
                         messages.add(ChatMessage(System.currentTimeMillis().toString(), messageText, true))
+                        keyboardController?.hide()
                         messageText = ""
                     }
                 })
@@ -138,6 +141,7 @@ fun EphemeralChatScreen(
                 onClick = {
                     if (messageText.isNotBlank()) {
                         messages.add(ChatMessage(System.currentTimeMillis().toString(), messageText, true))
+                        keyboardController?.hide()
                         messageText = ""
                     }
                 },
