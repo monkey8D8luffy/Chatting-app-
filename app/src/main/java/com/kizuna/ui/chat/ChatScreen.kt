@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -39,6 +40,7 @@ fun ChatScreen(
 ) {
     var messageText by remember { mutableStateOf("") }
     val messages = remember { mutableStateListOf<ChatMessage>() }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
         CryptoManager.initializeSession()
@@ -110,6 +112,7 @@ fun ChatScreen(
                 keyboardActions = KeyboardActions(onSend = {
                     if (messageText.isNotBlank()) {
                         sendMessage(messageText, webSocketManager, messages)
+                        keyboardController?.hide()
                         messageText = ""
                     }
                 })
@@ -121,6 +124,7 @@ fun ChatScreen(
                 onClick = {
                     if (messageText.isNotBlank()) {
                         sendMessage(messageText, webSocketManager, messages)
+                        keyboardController?.hide()
                         messageText = ""
                     }
                 },
