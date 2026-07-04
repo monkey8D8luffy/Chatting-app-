@@ -1,0 +1,3 @@
+## 2024-03-24 - Explicit Keyboard Dismissal in Compose Input Fields
+**Learning:** In Jetpack Compose, clicking on submit action buttons (like a search button) or pressing submit on the soft keyboard often leaves the keyboard trapped on screen, obscuring the UI.
+**Action:** When implementing input fields that trigger an action, always map the `KeyboardOptions(imeAction = ImeAction.Search/Done)` to `KeyboardActions` and inject `LocalSoftwareKeyboardController.current` to explicitly call `keyboardController?.hide()` on both the soft keyboard action and any associated physical submit buttons.
