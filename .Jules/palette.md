@@ -1,0 +1,3 @@
+## 2024-07-05 - Compose Keyboard and RTL Focus Management
+**Learning:** In Jetpack Compose, text inputs requiring action (like Search) must explicitly configure `KeyboardOptions(imeAction = ImeAction.Search)` and manage focus with `LocalSoftwareKeyboardController.current?.hide()` in their `KeyboardActions`. Omitting this leaves the keyboard stubbornly open on submit. Also, standard directional vectors like `Icons.Default.Chat` break in RTL layouts and must be replaced with `Icons.AutoMirrored.Filled.Chat` for accessibility compliance.
+**Action:** Always pair `KeyboardOptions` with `KeyboardActions` explicitly calling `.hide()` on action. Enforce `AutoMirrored` icons for any vector with inherent directionality.
